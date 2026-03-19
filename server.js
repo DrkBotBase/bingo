@@ -6,6 +6,7 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const path = require('path');
 require('dotenv').config();
+const PORT = process.env.PORT || 3000;
 
 const Juego = require('./models/Juego');
 const Carton = require('./models/Carton');
@@ -759,7 +760,6 @@ app.use((req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Servidor corriendo en PORT: ${PORT}`);
 });
