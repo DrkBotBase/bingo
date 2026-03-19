@@ -428,6 +428,11 @@
                 </h2>
                 
                 <div id="ultimasBolas" class="flex flex-wrap gap-2 mb-4 min-h-[100px]">
+                    <% if (juego && juego.ganador && juego.ganador.cartonId) { %>
+                        <div class="w-full bg-yellow-100 text-yellow-800 p-3 rounded-lg font-bold text-center border-2 border-yellow-300 mb-2 shadow-sm animate-pulse">
+                            <i class="fa-solid fa-trophy mr-2 text-yellow-600"></i> GANADOR: Cartón #<%= juego.ganador.cartonId %> (<%= juego.ganador.tipo %>)
+                        </div>
+                    <% } %>
                     <% if (juego && juego.bolasCantadas && juego.bolasCantadas.length > 0) { %>
                         <% juego.bolasCantadas.slice(-15).reverse().forEach(bola => { 
                             const color = 
