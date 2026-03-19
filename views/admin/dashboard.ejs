@@ -703,7 +703,22 @@
             document.getElementById('estadoTexto').textContent = 'finalizado';
             document.getElementById('estadoBadge').textContent = 'finalizado';
             document.getElementById('estadoBadge').className = 'estado-badge bg-gray-100 text-gray-800';
-            mostrarNotificacion(data.mensaje || '🏁 Juego finalizado', 'info');
+
+            if (data.cartonId && data.tipo) {
+                mostrarNotificacion(`🏆 Ganador: Cartón #${data.cartonId} (${data.tipo})`, 'success', 5000);
+
+                const contenedor = document.getElementById('ultimasBolas');
+                if (contenedor.children.length === 1 && contenedor.children[0].tagName === 'P') {
+                    contenedor.innerHTML = '';
+                }
+
+                const ganadorEl = document.createElement('div');
+                ganadorEl.className = 'w-full bg-yellow-100 text-yellow-800 p-3 rounded-lg font-bold text-center border-2 border-yellow-300 mb-2 shadow-sm animate-pulse';
+                ganadorEl.innerHTML = `<i class="fa-solid fa-trophy mr-2 text-yellow-600"></i> GANADOR: Cartón #${data.cartonId} (${data.tipo})`;
+                contenedor.prepend(ganadorEl);
+            } else {
+                mostrarNotificacion(data.mensaje || '🏁 Juego finalizado', 'info');
+            }
         });
         
         // Funciones
