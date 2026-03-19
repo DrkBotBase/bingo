@@ -754,7 +754,23 @@ document.addEventListener('click', function(event) {
             juegoPausado = false;
             actualizarBotones('finalizado');
             document.getElementById('modalidad').disabled = false;
-            mostrarNotificacion(data.mensaje || '🏁 Juego finalizado', 'info');
+
+            if (data.cartonId && data.tipo) {
+                mostrarNotificacion(`🏆 Ganador: Cartón #${data.cartonId} (${data.tipo})`, 'success', 5000);
+
+                // Mostrar en el historial (agregando un mensaje al inicio del panel de historial)
+                const historial = document.getElementById('historialCompleto');
+                if (historial.children.length === 1 && historial.children[0].tagName === 'P') {
+                    historial.innerHTML = '';
+                }
+                const ganadorEl = document.createElement('div');
+                ganadorEl.className = 'col-span-full bg-yellow-100 text-yellow-800 p-3 rounded-lg font-bold text-center border-2 border-yellow-300 mb-2 shadow-sm animate-pulse';
+                ganadorEl.innerHTML = `<i class="fa-solid fa-trophy mr-2 text-yellow-600"></i> GANADOR: Cartón #${data.cartonId} (${data.tipo})`;
+                historial.prepend(ganadorEl);
+            } else {
+                mostrarNotificacion(data.mensaje || '🏁 Juego finalizado', 'info');
+            }
+
             habilitarControlesBola(false);
         });
         
