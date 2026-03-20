@@ -1,21 +1,74 @@
-// pwa.js - Manejo de la instalación y eventos PWA
-
 let deferredPrompt;
 let installButton = null;
 
-// Detectar cuando la app es instalable
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const registration = await navigator.serviceWorker.register('/js/service-worker.js');
+      
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            showUpdateNotification();
+          }
+        });
+      });
+      
+    } catch (error) {
+      console.error('❌ Error registrando Service Worker:', error);
+    }
+  });
+}
+
+function showUpdateNotification() {
+  const updateDiv = document.createElement('div');
+  updateDiv.className = 'update-notification';
+  updateDiv.innerHTML = `
+    <div style="
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #10b981;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      z-index: 10001;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      cursor: pointer;
+      animation: slideIn 0.3s;
+    ">
+      🔄 Nueva versión disponible
+      <button onclick="location.reload()" style="
+        background: white;
+        color: #10b981;
+        border: none;
+        padding: 4px 12px;
+        border-radius: 5px;
+        margin-left: 10px;
+        cursor: pointer;
+        font-weight: bold;
+      ">Actualizar</button>
+    </div>
+  `;
+  document.body.appendChild(updateDiv);
+  
+  setTimeout(() => {
+    updateDiv.remove();
+  }, 10000);
+}
+
 window.addEventListener('beforeinstallprompt', (e) => {
-  console.log('📱 Evento beforeinstallprompt disparado');
   e.preventDefault();
   deferredPrompt = e;
   
-  // Crear botón de instalación si no existe
   if (!installButton) {
     createInstallButton();
   }
 });
 
-// Crear botón de instalación flotante
 function createInstallButton() {
   installButton = document.createElement('button');
   installButton.id = 'install-pwa';
@@ -47,13 +100,11 @@ function createInstallButton() {
   
   document.body.appendChild(installButton);
   
-  // Mostrar con animación
   setTimeout(() => {
     installButton.style.opacity = '1';
   }, 100);
 }
 
-// Función para instalar la PWA
 async function installPWA() {
   if (!deferredPrompt) {
     alert('Esta app ya está instalada o no es instalable en este dispositivo');
@@ -63,7 +114,6 @@ async function installPWA() {
   deferredPrompt.prompt();
   
   const { outcome } = await deferredPrompt.userChoice;
-  console.log(`📱 Resultado de instalación: ${outcome}`);
   
   deferredPrompt = null;
   
@@ -73,34 +123,26 @@ async function installPWA() {
   }
 }
 
-// Detectar cuando la app fue instalada
 window.addEventListener('appinstalled', (e) => {
-  console.log('✅ PWA instalada correctamente');
-  
   if (installButton) {
     installButton.remove();
     installButton = null;
   }
   
-  // Enviar evento de analytics si existe
   if (typeof gtag !== 'undefined') {
     gtag('event', 'pwa_installed');
   }
 });
 
-// Detectar modo offline/online
 window.addEventListener('online', () => {
-  console.log('📶 Conexión restaurada');
   showConnectionStatus('online', '🟢 Conexión restaurada');
   syncPendingData();
 });
 
 window.addEventListener('offline', () => {
-  console.log('📶 Sin conexión');
   showConnectionStatus('offline', '🔴 Sin conexión - Modo offline');
 });
 
-// Mostrar estado de conexión
 function showConnectionStatus(type, message) {
   const statusDiv = document.createElement('div');
   statusDiv.className = `connection-status ${type}`;
@@ -128,22 +170,21 @@ function showConnectionStatus(type, message) {
   }, 3000);
 }
 
-// Sincronizar datos pendientes
 function syncPendingData() {
   if ('serviceWorker' in navigator && 'SyncManager' in window) {
     navigator.serviceWorker.ready.then(registration => {
-      registration.sync.register('sync-marcados');
+      registration.sync.register('sync-marcados').catch(err => {
+        console.log('Background sync no soportado:', err);
+      });
     });
   }
 }
 
-// Verificar si la app se ejecuta como PWA
 function isRunningAsPWA() {
   return window.matchMedia('(display-mode: standalone)').matches || 
          window.navigator.standalone === true;
 }
 
-// Agregar estilos para animaciones
 const style = document.createElement('style');
 style.textContent = `
   @keyframes slideDown {
@@ -153,6 +194,17 @@ style.textContent = `
     }
     to {
       transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
       opacity: 1;
     }
   }
@@ -168,34 +220,25 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Inicializar
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('📱 PWA inicializada');
-  
   if (isRunningAsPWA()) {
-    console.log('📱 Ejecutando como PWA instalada');
     document.body.classList.add('pwa-mode');
   }
 });
 
-// Cachear datos del juego para offline
 async function cacheGameData() {
   if ('caches' in window) {
     try {
       const cache = await caches.open('game-data');
       
-      // Cachear datos actuales del juego
       const response = await fetch('/api/juego/estado');
       const data = await response.json();
       
       await cache.put('/api/juego/estado', new Response(JSON.stringify(data)));
-      console.log('✅ Datos del juego cacheados para offline');
-      
     } catch (error) {
       console.log('❌ Error cacheando datos:', error);
     }
   }
 }
 
-// Ejecutar cada 5 minutos
 setInterval(cacheGameData, 300000);

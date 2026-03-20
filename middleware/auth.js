@@ -7,8 +7,6 @@ module.exports = {
   },
   
   isPlayer: (req, res, next) => {
-    // Los jugadores no necesitan autenticación
-    // Pero podemos agregar lógica de rate limiting aquí
     next();
   }
 };

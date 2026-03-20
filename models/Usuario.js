@@ -15,7 +15,7 @@ const usuarioSchema = new mongoose.Schema({
     },
     cartonesAsignados: [{
         type: Number,
-        ref: 'BCarton',  // Referencia al modelo Carton
+        ref: 'BCarton',
         required: true
     }],
     activo: { 
@@ -33,7 +33,6 @@ const usuarioSchema = new mongoose.Schema({
     }
 });
 
-// Límite de 4 cartones por usuario
 usuarioSchema.path('cartonesAsignados').validate(function(cartones) {
     return cartones.length <= 4;
 }, 'Máximo 4 cartones por usuario');

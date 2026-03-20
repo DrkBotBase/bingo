@@ -15,7 +15,6 @@ const connectDB = async () => {
         await mongoose.connect(uri, options);
         console.log('✅ MongoDB conectado correctamente');
 
-        // Manejar eventos de conexión
         mongoose.connection.on('error', (err) => {
             console.error('❌ Error en la conexión de MongoDB:', err);
         });
@@ -28,7 +27,6 @@ const connectDB = async () => {
             console.log('🟢 MongoDB reconectado');
         });
 
-        // Esperar un momento para asegurar que la conexión está lista
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         return mongoose.connection;

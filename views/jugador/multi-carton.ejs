@@ -9,13 +9,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-        
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
-
         .carton-container {
             background: white;
             border-radius: 1rem;
@@ -24,12 +22,10 @@
             transition: all 0.2s ease;
             border: 2px solid transparent;
         }
-
         .carton-container:hover {
             transform: translateY(-2px);
             box-shadow: 0 20px 50px rgba(0,0,0,0.15);
         }
-
         .numero-carton {
             aspect-ratio: 1;
             display: flex;
@@ -44,20 +40,17 @@
             border: 2px solid #e5e7eb;
             color: #1f2937;
         }
-
         .numero-carton:hover:not(.marcado) {
             background: #f3f4f6;
             border-color: #9ca3af;
             transform: scale(0.98);
         }
-
         .numero-carton.marcado {
             background: #10b981;
             border-color: #059669;
             color: white;
             transform: scale(0.95);
         }
-
         .bola-historial {
             width: 2.5rem;
             height: 2.5rem;
@@ -70,11 +63,9 @@
             color: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-
         .progress-bar {
             transition: width 0.3s ease;
         }
-
         .card-glass {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
@@ -83,7 +74,6 @@
     </style>
 </head>
 <body class="text-gray-800">
-    <!-- Header con diseño más limpio -->
     <div class="card-glass sticky top-0 z-10 shadow-lg">
         <div class="container mx-auto px-4 py-3">
             <div class="flex flex-wrap items-center justify-between gap-3">
@@ -129,7 +119,6 @@
                 </div>
             </div>
             
-            <!-- Barra de progreso -->
             <div class="mt-3 bg-white/50 rounded-full p-2">
                 <div class="flex justify-between text-xs text-gray-600 mb-1 px-1">
                     <span>Progreso global</span>
@@ -143,7 +132,6 @@
     </div>
     
     <div class="container mx-auto px-4 py-6">
-        <!-- Bolas cantadas (más compacto) -->
         <div class="card-glass rounded-xl p-4 mb-6 shadow-md">
             <div class="flex items-center justify-between mb-3">
                 <h2 class="font-semibold text-gray-700">
@@ -155,16 +143,12 @@
                 </span>
             </div>
             <div id="historialBolas" class="flex flex-wrap gap-2">
-                <!-- Se llena dinámicamente -->
             </div>
         </div>
         
-        <!-- Grid de cartones -->
         <div id="cartonesContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            <!-- Los cartones se cargarán dinámicamente -->
         </div>
         
-        <!-- Mensaje sin cartones -->
         <div id="sinCartones" class="hidden card-glass rounded-xl p-12 text-center">
             <div class="text-6xl mb-4">🎰</div>
             <h2 class="text-2xl font-bold text-gray-800 mb-2">No tienes cartones</h2>
@@ -601,7 +585,6 @@
                 if (cartonContainer) {
                     cartonContainer.classList.add('border-4', 'border-yellow-400', 'bg-yellow-50', 'transform', 'scale-105', 'shadow-2xl');
 
-                    // Agregar badge de ganador
                     const headerRow = cartonContainer.querySelector('.flex.justify-between.items-center');
                     if (headerRow) {
                         const ganadorBadge = document.createElement('div');

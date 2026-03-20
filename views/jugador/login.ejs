@@ -262,7 +262,6 @@
 
     <script>
         const socket = io();
-        
         const inputCodigo = document.getElementById('codigoAcceso');
         const inputCheck = document.getElementById('inputCheck');
         
@@ -288,14 +287,10 @@
                 <span>⏳ Accediendo...</span>
                 <i class="fa-solid fa-spinner fa-spin ml-2"></i>
             `;
-            
-            console.log('🔍 Accediendo con código:', codigo);
             socket.emit('acceder-con-codigo', { codigo });
         }
         
         socket.on('acceso-exitoso', (data) => {
-            console.log('✅ Acceso exitoso, datos recibidos:', data);
-            
             if (!data.cartones || data.cartones.length === 0) {
                 mostrarError('No tienes cartones asignados');
                 
@@ -307,11 +302,6 @@
             
             sessionStorage.setItem('usuario', JSON.stringify(data.usuario));
             sessionStorage.setItem('cartones', JSON.stringify(data.cartones));
-            
-            console.log('💾 Guardados en sessionStorage:', {
-                usuario: data.usuario,
-                cartones: data.cartones.length
-            });
             
             mostrarExito('¡Acceso correcto! Redirigiendo...');
             

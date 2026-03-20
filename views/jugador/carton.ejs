@@ -38,7 +38,6 @@
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <!-- Header -->
     <div class="bg-white shadow-lg mb-6">
         <div class="container mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
@@ -50,12 +49,10 @@
                 </div>
                 
                 <div class="flex items-center space-x-4">
-                    <!-- Modalidad -->
                     <span class="px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold" id="modalidadDisplay">
                         <%= juego.modalidad || 'Esperando...' %>
                     </span>
                     
-                    <!-- Toggle modo -->
                     <button id="toggleModo" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition">
                         <span id="modoTexto">Modo Manual</span>
                     </button>
@@ -66,7 +63,6 @@
     
     <div class="container mx-auto px-4">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <!-- Columna izquierda: Bolas cantadas CON HISTORIAL COMPLETO -->
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-lg shadow-lg p-4 sticky top-4">
                     <h2 class="text-lg font-bold mb-4 flex items-center">
@@ -74,7 +70,6 @@
                         Bolas Cantadas
                     </h2>
                     
-                    <!-- Última bola destacada -->
                     <div class="text-center mb-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
                         <div class="text-sm text-gray-600">Última bola</div>
                         <div id="ultimaBola" class="text-5xl font-bold">
@@ -82,7 +77,6 @@
                         </div>
                     </div>
                     
-                    <!-- Selector de vista: Últimas / Todas -->
                     <div class="flex mb-3 border-b">
                         <button id="btnVerUltimas" class="flex-1 py-2 font-semibold text-blue-600 border-b-2 border-blue-600">
                             Últimas 20
@@ -92,7 +86,6 @@
                         </button>
                     </div>
                     
-                    <!-- Vista de ÚLTIMAS 20 bolas -->
                     <div id="vistaUltimas" class="block">
                         <div id="bolasHistorial" class="flex flex-wrap gap-2 justify-center max-h-96 overflow-y-auto p-2">
                             <% if (juego && juego.bolasCantadas && juego.bolasCantadas.length > 0) { %>
@@ -114,7 +107,6 @@
                         </div>
                     </div>
                     
-                    <!-- Vista de TODAS las bolas (modal) -->
                     <div id="vistaTodas" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
                         <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
                             <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 flex justify-between items-center">
@@ -123,7 +115,6 @@
                             </div>
                             <div class="p-6 overflow-y-auto max-h-[calc(80vh-80px)]">
                                 <div id="historialCompleto" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
-                                    <!-- Se llenará con JavaScript -->
                                 </div>
                             </div>
                             <div class="bg-gray-50 p-4 text-right border-t">
@@ -133,145 +124,125 @@
                         </div>
                     </div>
                     
-                    <!-- Botón para ver historial completo -->
                     <button onclick="abrirHistorialCompleto()" 
                             class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition transform hover:scale-105
                                    <%= juego && juego.bolasCantadas && juego.bolasCantadas.length > 0 ? '' : 'hidden' %>"
                             id="btnVerHistorialCompleto">
                         📋 Ver historial completo
                     </button>
-                    
-                    <!-- Contador -->
                     <div class="mt-4 text-center text-sm text-gray-600">
                         Total: <span id="totalBolas"><%= juego && juego.bolasCantadas ? juego.bolasCantadas.length : 0 %></span> bolas
                     </div>
                 </div>
             </div>
             
-            <!-- Columna central: Cartón -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-lg shadow-xl p-6">
                     <h2 class="text-xl font-bold text-center mb-4">TU CARTÓN</h2>
-                    
-                    <!-- Cartón 5x5 -->
-  <div class="grid grid-cols-5 gap-2 mb-6">
-    <% 
-        const estilosLetras = {
-            'B': { color: 'bg-blue-500', shadow: 'shadow-blue-300' },
-            'I': { color: 'bg-yellow-500', shadow: 'shadow-yellow-300' },
-            'N': { color: 'bg-red-500', shadow: 'shadow-red-300' },
-            'G': { color: 'bg-green-500', shadow: 'shadow-green-300' },
-            'O': { color: 'bg-purple-500', shadow: 'shadow-purple-300' }
-        };
-    %>
-    <% ['B', 'I', 'N', 'G', 'O'].forEach(letra => { %>
-        <div class="flex justify-center transform hover:scale-110 transition-transform">
-            <div class="w-14 h-14 rounded-full <%= estilosLetras[letra].color %> text-white flex items-center justify-center font-bold text-2xl shadow-lg <%= estilosLetras[letra].shadow %> shadow-md border-2 border-white">
-                <%= letra %>
-            </div>
-        </div>
-    <% }); %>
-    
-<!-- Números con centro especial para logo -->
-<% for(let i = 0; i < 5; i++) { %>
-    <% for(let j = 0; j < 5; j++) { %>
-        <% const numero = carton.numeros[i][j]; %>
-        <% const marcado = carton.marcados && carton.marcados.includes(`${i}-${j}`); %>
-        
-        <!-- Colores de fondo según columna -->
-        <% 
-            let colorNormal = 'bg-gray-50';
-            let colorHover = 'hover:bg-gray-200';
-            
-            if (numero) {
-                if (j === 0) { colorNormal = 'bg-blue-50'; colorHover = 'hover:bg-blue-200'; }
-                else if (j === 1) { colorNormal = 'bg-yellow-50'; colorHover = 'hover:bg-yellow-200'; }
-                else if (j === 2) { colorNormal = 'bg-red-50'; colorHover = 'hover:bg-red-200'; }
-                else if (j === 3) { colorNormal = 'bg-green-50'; colorHover = 'hover:bg-green-200'; }
-                else if (j === 4) { colorNormal = 'bg-purple-50'; colorHover = 'hover:bg-purple-200'; }
-            }
-        %>
-        
-        <!-- Si es el centro (fila 2, columna 2) mostrar logo -->
-          <% if (i === 2 && j === 2) { %>
-              <div class="
-                  aspect-square flex items-center justify-center rounded-lg
-                  bg-white shadow-lg overflow-hidden
-              ">
-                  <img src="/logo.png" alt="Logo" class="w-full h-full object-contain p-1">
+                <div class="grid grid-cols-5 gap-2 mb-6">
+                  <% 
+                      const estilosLetras = {
+                          'B': { color: 'bg-blue-500', shadow: 'shadow-blue-300' },
+                          'I': { color: 'bg-yellow-500', shadow: 'shadow-yellow-300' },
+                          'N': { color: 'bg-red-500', shadow: 'shadow-red-300' },
+                          'G': { color: 'bg-green-500', shadow: 'shadow-green-300' },
+                          'O': { color: 'bg-purple-500', shadow: 'shadow-purple-300' }
+                      };
+                  %>
+                  <% ['B', 'I', 'N', 'G', 'O'].forEach(letra => { %>
+                      <div class="flex justify-center transform hover:scale-110 transition-transform">
+                          <div class="w-14 h-14 rounded-full <%= estilosLetras[letra].color %> text-white flex items-center justify-center font-bold text-2xl shadow-lg <%= estilosLetras[letra].shadow %> shadow-md border-2 border-white">
+                              <%= letra %>
+                          </div>
+                      </div>
+                  <% }); %>
+              
+              <% for(let i = 0; i < 5; i++) { %>
+                  <% for(let j = 0; j < 5; j++) { %>
+                      <% const numero = carton.numeros[i][j]; %>
+                      <% const marcado = carton.marcados && carton.marcados.includes(`${i}-${j}`); %>
+                      <% 
+                          let colorNormal = 'bg-gray-50';
+                          let colorHover = 'hover:bg-gray-200';
+                          
+                          if (numero) {
+                              if (j === 0) { colorNormal = 'bg-blue-50'; colorHover = 'hover:bg-blue-200'; }
+                              else if (j === 1) { colorNormal = 'bg-yellow-50'; colorHover = 'hover:bg-yellow-200'; }
+                              else if (j === 2) { colorNormal = 'bg-red-50'; colorHover = 'hover:bg-red-200'; }
+                              else if (j === 3) { colorNormal = 'bg-green-50'; colorHover = 'hover:bg-green-200'; }
+                              else if (j === 4) { colorNormal = 'bg-purple-50'; colorHover = 'hover:bg-purple-200'; }
+                          }
+                      %>
+                        <% if (i === 2 && j === 2) { %>
+                            <div class="
+                                aspect-square flex items-center justify-center rounded-lg
+                                bg-white shadow-lg overflow-hidden
+                            ">
+                                <img src="/logo.png" alt="Logo" class="w-full h-full object-contain p-1">
+                            </div>
+                        <% } else { %>
+                          <div class="
+                              aspect-square flex items-center justify-center text-xl font-bold rounded-lg cursor-pointer
+                              <%= numero ? colorNormal : 'bg-gray-200' %>
+                              <%= numero ? colorHover : '' %>
+                              <%= marcado ? 'bg-green-500 text-white hover:bg-green-600' : '' %>
+                              <%= !numero ? 'cursor-default' : '' %>
+                              numero-carton
+                              transition-all duration-200
+                              shadow hover:shadow-lg
+                              relative overflow-hidden
+                          "
+                          data-fila="<%= i %>"
+                          data-columna="<%= j %>"
+                          data-numero="<%= numero || '' %>"
+                          <%- numero ? `onclick="marcarNumero(this, ${i}, ${j}, ${numero})"` : '' %>>
+                              <% if (numero && !marcado) { %>
+                                  <div class="absolute top-0 left-0 w-full h-1 <%= 
+                                      j === 0 ? 'bg-blue-500' : 
+                                      j === 1 ? 'bg-yellow-500' : 
+                                      j === 2 ? 'bg-red-500' : 
+                                      j === 3 ? 'bg-green-500' : 
+                                      'bg-purple-500' 
+                                  %>"></div>
+                              <% } %>
+                              
+                              <%= numero || '★' %>
+                          </div>
+                      <% } %>
+                  <% } %>
+              <% } %>
               </div>
-          <% } else { %>
-            <div class="
-                aspect-square flex items-center justify-center text-xl font-bold rounded-lg cursor-pointer
-                <%= numero ? colorNormal : 'bg-gray-200' %>
-                <%= numero ? colorHover : '' %>
-                <%= marcado ? 'bg-green-500 text-white hover:bg-green-600' : '' %>
-                <%= !numero ? 'cursor-default' : '' %>
-                numero-carton
-                transition-all duration-200
-                shadow hover:shadow-lg
-                relative overflow-hidden
-            "
-            data-fila="<%= i %>"
-            data-columna="<%= j %>"
-            data-numero="<%= numero || '' %>"
-            <%- numero ? `onclick="marcarNumero(this, ${i}, ${j}, ${numero})"` : '' %>>
-                
-                <!-- Indicador de columna -->
-                <% if (numero && !marcado) { %>
-                    <div class="absolute top-0 left-0 w-full h-1 <%= 
-                        j === 0 ? 'bg-blue-500' : 
-                        j === 1 ? 'bg-yellow-500' : 
-                        j === 2 ? 'bg-red-500' : 
-                        j === 3 ? 'bg-green-500' : 
-                        'bg-purple-500' 
-                    %>"></div>
-                <% } %>
-                
-                <%= numero || '★' %>
-            </div>
-        <% } %>
-    <% } %>
-<% } %>
-</div>
-
-<!-- Leyenda de colores -->
-<div class="flex justify-center gap-4 mt-4 text-xs text-gray-600">
-    <div class="flex items-center gap-1">
-        <div class="w-3 h-3 rounded-full bg-blue-500"></div>
-        <span>B (1-15)</span>
-    </div>
-    <div class="flex items-center gap-1">
-        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-        <span>I (16-30)</span>
-    </div>
-    <div class="flex items-center gap-1">
-        <div class="w-3 h-3 rounded-full bg-red-500"></div>
-        <span>N (31-45)</span>
-    </div>
-    <div class="flex items-center gap-1">
-        <div class="w-3 h-3 rounded-full bg-green-500"></div>
-        <span>G (46-60)</span>
-    </div>
-    <div class="flex items-center gap-1">
-        <div class="w-3 h-3 rounded-full bg-purple-500"></div>
-        <span>O (61-75)</span>
-    </div>
-</div>
-                    
-                    <!-- Instrucciones -->
+                <div class="flex justify-center gap-4 mt-4 text-xs text-gray-600">
+                    <div class="flex items-center gap-1">
+                        <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                        <span>B (1-15)</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <span>I (16-30)</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <span>N (31-45)</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span>G (46-60)</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+                        <span>O (61-75)</span>
+                    </div>
+                </div>
                     <div class="text-sm text-gray-600 text-center border-t pt-4">
                         <p class="mb-2">💡 Haz clic en los números para marcarlos (solo si han salido)</p>
                         <p>🎯 Modo automático: los números se marcan solos</p>
                     </div>
                 </div>
             </div>
-            
-            <!-- Columna derecha: Información -->
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-lg shadow-lg p-4">
                     <h2 class="text-lg font-bold mb-4">📊 Estado del juego</h2>
-                    
                     <div class="space-y-3">
                         <div class="flex justify-between items-center">
                             <span>Estado:</span>
@@ -282,24 +253,19 @@
                                 <%= juego.estado || 'esperando' %>
                             </span>
                         </div>
-                        
                         <div class="flex justify-between items-center">
                             <span>Modalidad:</span>
                             <span class="font-semibold"><%= juego.modalidad || 'No definida' %></span>
                         </div>
-                        
                         <div class="flex justify-between items-center">
                             <span>Números marcados:</span>
                             <span class="font-semibold" id="contadorMarcados"><%= carton.marcados?.length || 0 %>/25</span>
                         </div>
-                        
                         <div class="flex justify-between items-center">
                             <span>Modo actual:</span>
                             <span class="font-semibold" id="modoActualDisplay">Manual</span>
                         </div>
                     </div>
-                    
-                    <!-- Botón Bingo -->
                     <button id="btnBingo" 
                             class="w-full mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-lg text-xl transition transform hover:scale-105 shadow-lg hidden">
                         🎰 ¡BINGO!
@@ -310,25 +276,20 @@
     </div>
     
 <script>
-    // Configuración inicial
     const socket = io();
     const numeroCarton = <%= carton.numeroCarton %>;
     let modoAutomatico = <%= carton.modoMarcado === 'automatico' ? 'true' : 'false' %>;
     let juegoActivo = <%= juego && juego.estado === 'jugando' ? 'true' : 'false' %>;
     
-    // Cargar bolas cantadas del servidor
     let todasLasBolas = [];
     <% if (juego && juego.bolasCantadas) { %>
         todasLasBolas = <%= JSON.stringify(juego.bolasCantadas) %>;
     <% } %>
     
-    // Variables para bolas formateadas
     let bolasFormateadas = [];
     
-    // Cargar marcados de localStorage al iniciar
     let numerosMarcados = new Set();
     
-    // ========== FUNCIONES PARA FORMATO BINGO ==========
     function getColorPorLetra(letra) {
         const colores = {
             'B': 'bg-blue-500',
@@ -353,7 +314,6 @@
         bolasFormateadas = todasLasBolas.map(numero => formatearBola(numero));
     }
     
-    // ========== FUNCIONES DE LOCALSTORAGE ==========
     function cargarMarcadosLocal() {
         const guardado = localStorage.getItem(`carton_${numeroCarton}_marcados`);
         if (guardado) {
@@ -361,7 +321,6 @@
                 const marcadosArray = JSON.parse(guardado);
                 numerosMarcados = new Set(marcadosArray);
                 
-                // Actualizar UI
                 marcadosArray.forEach(posicion => {
                     const [fila, columna] = posicion.split('-');
                     const celda = document.querySelector(`[data-fila="${fila}"][data-columna="${columna}"]`);
@@ -371,7 +330,6 @@
                 });
                 
                 actualizarContador();
-                console.log('📦 Marcados cargados de localStorage:', marcadosArray.length);
             } catch (e) {
                 console.error('Error cargando marcados:', e);
             }
@@ -381,10 +339,8 @@
     function guardarMarcadosLocal() {
         const marcadosArray = Array.from(numerosMarcados);
         localStorage.setItem(`carton_${numeroCarton}_marcados`, JSON.stringify(marcadosArray));
-        console.log('💾 Marcados guardados en localStorage:', marcadosArray.length);
     }
     
-    // ========== FUNCIONES DE HISTORIAL ==========
     function abrirHistorialCompleto() {
         const modal = document.getElementById('vistaTodas');
         const contenedor = document.getElementById('historialCompleto');
@@ -408,10 +364,7 @@
         if (modal) modal.classList.add('hidden');
     }
     
-    // ========== FUNCIÓN PARA MARCAR (CORREGIDA) ==========
     window.marcarNumero = function(elemento, fila, columna, numero) {
-        console.log('Intentando marcar:', { fila, columna, numero, modoAutomatico, juegoActivo });
-        
         if (!juegoActivo) {
             alert('⏸️ El juego no está activo');
             return;
@@ -423,11 +376,9 @@
         }
         
         if (!numero) {
-            console.log('Espacio vacío (centro del logo)');
             return;
         }
         
-        // Verificar si la bola ha salido
         if (!todasLasBolas.includes(numero)) {
             alert(`❌ La bola ${numero} aún no ha salido`);
             return;
@@ -440,34 +391,22 @@
             return;
         }
         
-        // Marcar visualmente - SOLO agregar clases verdes
         elemento.classList.add('bg-green-500', 'text-white', 'hover:bg-green-600');
-        
-        // NO quitamos las clases de color de fondo originales
-        // Las clases verdes tienen prioridad por el orden en CSS
         
         numerosMarcados.add(posicion);
         
-        // Guardar en localStorage
         guardarMarcadosLocal();
         
-        // Enviar al servidor
         socket.emit('marcar-manual', {
             numeroCarton: numeroCarton,
             posicion: posicion
         });
         
         actualizarContador();
-        console.log(`✅ Marcado manual: ${numero} en posición ${posicion}`);
     }
     
-    // ========== FUNCIÓN PARA MARCADO AUTOMÁTICO (CORREGIDA) ==========
     function marcarNumeroAutomatico(numero) {
-        console.log('🤖 Marcado automático para número:', numero);
-        
         const celdas = document.querySelectorAll(`[data-numero="${numero}"]`);
-        console.log(`🔍 Encontradas ${celdas.length} celdas con el número ${numero}`);
-        
         let huboCambios = false;
         
         celdas.forEach(celda => {
@@ -476,32 +415,22 @@
             const posicion = `${fila}-${columna}`;
             
             if (!numerosMarcados.has(posicion)) {
-                console.log(`🤖 Marcando automático: ${numero} en posición ${posicion}`);
-                
-                // Marcar visualmente - SOLO agregar clases verdes, NO quitar las de color
                 celda.classList.add('bg-green-500', 'text-white', 'hover:bg-green-600');
-                
-                // IMPORTANTE: No quitamos las clases de color de fondo originales
-                // porque eso hace que se vuelvan transparentes
                 
                 numerosMarcados.add(posicion);
                 huboCambios = true;
             } else {
-                console.log(`⏭️ Posición ${posicion} ya estaba marcada`);
+                console.log(`⏭️`);
             }
         });
         
         if (huboCambios) {
             guardarMarcadosLocal();
             actualizarContador();
-            console.log('💾 Marcados automáticos guardados');
         }
     }
     
-    // ========== FUNCIÓN PARA MARCAR BOLAS ANTERIORES (CORREGIDA) ==========
     function marcarBolasAnteriores() {
-        console.log('🔄 Marcando bolas anteriores en modo automático');
-        
         todasLasBolas.forEach(numero => {
             const celdas = document.querySelectorAll(`[data-numero="${numero}"]`);
             
@@ -511,7 +440,6 @@
                 const posicion = `${fila}-${columna}`;
                 
                 if (!numerosMarcados.has(posicion)) {
-                    // SOLO agregar clases verdes, mantener las de color
                     celda.classList.add('bg-green-500', 'text-white', 'hover:bg-green-600');
                     
                     numerosMarcados.add(posicion);
@@ -521,7 +449,6 @@
         
         guardarMarcadosLocal();
         actualizarContador();
-        console.log('✅ Bolas anteriores marcadas, total:', numerosMarcados.size);
     }
     
     function actualizarContador() {
@@ -529,7 +456,7 @@
         const btnBingo = document.getElementById('btnBingo');
         
         if (contador) {
-            contador.textContent = numerosMarcados.size + '/24'; // 24 porque el centro no cuenta
+            contador.textContent = numerosMarcados.size + '/24';
         }
         
         if (numerosMarcados.size === 24 && juegoActivo) {
@@ -567,23 +494,19 @@
         }
     }
     
-    // ========== INICIALIZACIÓN ==========
     document.addEventListener('DOMContentLoaded', () => {
         cargarMarcadosLocal();
         actualizarBolasFormateadas();
         
-        // Actualizar modo en UI
         const modoTexto = document.getElementById('modoTexto');
         const modoDisplay = document.getElementById('modoActualDisplay');
         if (modoTexto) modoTexto.textContent = modoAutomatico ? 'Modo Automático' : 'Modo Manual';
         if (modoDisplay) modoDisplay.textContent = modoAutomatico ? 'Automático' : 'Manual';
         
-        // Si está en automático al cargar, marcar bolas anteriores
         if (modoAutomatico && todasLasBolas.length > 0) {
             marcarBolasAnteriores();
         }
         
-        // Configurar botones de historial
         const btnVerUltimas = document.getElementById('btnVerUltimas');
         const btnVerTodas = document.getElementById('btnVerTodas');
         
@@ -610,10 +533,8 @@
         }
     });
     
-    // Registrar cartón
     socket.emit('registrar-carton', { numeroCarton });
     
-    // ========== EVENTOS DE SOCKET ==========
     socket.on('juego-iniciado', (data) => {
         const estadoJuego = document.getElementById('estadoJuego');
         const modalidadDisplay = document.getElementById('modalidadDisplay');
@@ -650,13 +571,9 @@
     socket.on('nueva-bola', (data) => {
         const { numero, formato, letra, bolasCantadas: nuevasBolas } = data;
         
-        console.log('🎲 Nueva bola recibida:', { numero, formato, letra });
-        
-        // Actualizar listas globales
         todasLasBolas = nuevasBolas;
         actualizarBolasFormateadas();
         
-        // Actualizar UI
         const ultimaBola = document.getElementById('ultimaBola');
         const totalBolas = document.getElementById('totalBolas');
         const btnHistorial = document.getElementById('btnVerHistorialCompleto');
@@ -665,7 +582,6 @@
         if (totalBolas) totalBolas.textContent = nuevasBolas.length;
         if (btnHistorial && nuevasBolas.length > 0) btnHistorial.classList.remove('hidden');
         
-        // Agregar al historial de últimas
         const historial = document.getElementById('bolasHistorial');
         if (historial) {
             if (historial.children.length === 1 && historial.children[0].tagName === 'P') {
@@ -682,7 +598,6 @@
             }
         }
         
-        // Si modo automático, marcar número
         if (modoAutomatico && juegoActivo) {
             marcarNumeroAutomatico(numero);
         }
@@ -707,7 +622,7 @@
     });
     
     socket.on('marcado-exitoso', (data) => {
-        console.log('✅ Confirmación de marcado:', data);
+        console.log('✅');
     });
     
     socket.on('modo-cambiado', (data) => {
@@ -724,35 +639,24 @@
         const modoAnterior = modoAutomatico;
         modoAutomatico = data.modo === 'automatico';
         
-        // Si cambió a automático, marcar todas las bolas anteriores
         if (modoAutomatico && !modoAnterior && todasLasBolas.length > 0) {
-            console.log('🔄 Cambio a automático - marcando bolas anteriores');
             marcarBolasAnteriores();
         }
     });
     
-    // Detectar cuando la sesión es reemplazada (otra pestaña)
     socket.on('sesion-reemplazada', () => {
         alert('⚠️ Esta sesión ha sido reemplazada por otra conexión');
-        // Opcional: recargar o redirigir
         window.location.reload();
     });
     
-    // Al recargar la página, verificar estado
     window.addEventListener('load', () => {
-        // Si hay juego activo, asegurar que los marcados locales están sincronizados
         if (juegoActivo) {
-            console.log('🔄 Página recargada - Verificando estado del juego');
-            // Solicitar estado actual al servidor
             fetch(`/api/juego/estado/${numeroCarton}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.juego.estado === 'jugando') {
-                        // Actualizar bolas cantadas
                         todasLasBolas = data.juego.bolasCantadas;
                         actualizarBolasFormateadas();
-                        
-                        // Si modo automático, marcar todo
                         if (modoAutomatico) {
                             marcarBolasAnteriores();
                         }
@@ -761,25 +665,18 @@
         }
     });
     
-    // ========== FUNCIÓN DE REINICIO (CORREGIDA) ==========
     socket.on('reiniciar-cartones', () => {
-        console.log('🔄 Reiniciando cartón');
-        
         numerosMarcados.clear();
         guardarMarcadosLocal();
         
         document.querySelectorAll('[data-numero]').forEach(celda => {
-            // Quitar solo las clases verdes, mantener las de color
             celda.classList.remove('bg-green-500', 'text-white', 'hover:bg-green-600');
             
-            // Restaurar color según columna (solo si no está marcado)
             const columna = parseInt(celda.dataset.columna);
             const fila = parseInt(celda.dataset.fila);
             const numero = parseInt(celda.dataset.numero);
             
-            // Si no es el centro y tiene número
             if (numero && !(fila === 2 && columna === 2)) {
-                // Asegurar que tenga su color de columna
                 if (columna === 0) {
                     celda.classList.add('bg-blue-50', 'hover:bg-blue-100');
                 } else if (columna === 1) {
@@ -799,7 +696,6 @@
         localStorage.removeItem(`carton_${numeroCarton}_marcados`);
     });
     
-    // ========== EVENT LISTENERS ==========
     const toggleModo = document.getElementById('toggleModo');
     if (toggleModo) {
         toggleModo.addEventListener('click', () => {
@@ -836,7 +732,6 @@
         }
     });
     
-    // ========== INICIALIZACIÓN FINAL ==========
     actualizarContador();
     
     setInterval(() => {

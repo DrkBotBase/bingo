@@ -20,7 +20,6 @@
     </style>
 </head>
 <body class="bg-gray-100">
-    <!-- Header -->
     <div class="bg-white shadow-lg mb-6">
         <div class="container mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
@@ -44,7 +43,6 @@
     </div>
     
     <div class="container mx-auto px-4">
-        <!-- Estado del juego -->
         <div class="bg-white rounded-lg shadow-lg p-4 mb-6">
             <div class="flex items-center justify-between">
                 <div>
@@ -64,12 +62,9 @@
             </div>
         </div>
         
-        <!-- Grid de cartones -->
         <div id="cartonesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <!-- Los cartones se cargarán dinámicamente -->
         </div>
         
-        <!-- Sin cartones -->
         <div id="sinCartones" class="hidden bg-white rounded-lg shadow-lg p-12 text-center">
             <div class="text-7xl mb-4">😕</div>
             <h2 class="text-2xl font-bold text-gray-800 mb-2">No tienes cartones asignados</h2>
@@ -86,7 +81,7 @@
         let cartones = [];
         let cartonActivo = null;
         
-        // Cargar datos del usuario
+        
         document.addEventListener('DOMContentLoaded', () => {
             const usuarioData = sessionStorage.getItem('usuario');
             const cartonesData = sessionStorage.getItem('cartones');
@@ -107,7 +102,6 @@
                 renderizarCartones();
             }
             
-            // Registrar con socket
             socket.emit('registrar-usuario', { 
                 codigo: usuario.codigo,
                 cartones: usuario.cartones 
@@ -123,7 +117,6 @@
                 cartonDiv.className = 'bg-white rounded-lg shadow-lg p-4 cursor-pointer carton-miniatura';
                 cartonDiv.onclick = () => verCarton(carton.numeroCarton);
                 
-                // Miniatura del cartón (3x3 simplificado)
                 let numerosHTML = '<div class="grid grid-cols-3 gap-1 mb-3">';
                 for (let i = 0; i < 3; i++) {
                     for (let j = 0; j < 3; j++) {
@@ -161,7 +154,6 @@
             window.location.href = '/jugador/login';
         }
         
-        // Eventos de socket
         socket.on('juego-iniciado', (data) => {
             document.getElementById('estadoJuego').textContent = 'jugando';
             document.getElementById('estadoJuego').className = 'ml-2 px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800';

@@ -1,22 +1,17 @@
-// routes/jugador.js
-
 const express = require('express');
 const router = express.Router();
 const Carton = require('../models/Carton');
 const Juego = require('../models/Juego');
 const Usuario = require('../models/Usuario');
 
-// Página de login
 router.get('/login', (req, res) => {
     res.render('jugador/login');
 });
 
-// Página de mis cartones
 router.get('/mis-cartones', (req, res) => {
     res.render('jugador/mis-cartones');
 });
 
-// Ver cartón específico (ahora con validación de código)
 router.get('/carton/:numero', async (req, res) => {
     try {
         const numeroCarton = parseInt(req.params.numero);
@@ -26,7 +21,6 @@ router.get('/carton/:numero', async (req, res) => {
             return res.redirect('/jugador/login');
         }
         
-        // Validar que el usuario tiene acceso a este cartón
         const usuario = await Usuario.findOne({ 
             codigoAcceso: codigo.toUpperCase(),
             cartonesAsignados: numeroCarton,
@@ -39,7 +33,6 @@ router.get('/carton/:numero', async (req, res) => {
             });
         }
         
-        // Buscar cartón
         let carton = await Carton.findOne({ numeroCarton });
         
         if (!carton) {
@@ -64,13 +57,11 @@ router.get('/carton/:numero', async (req, res) => {
     }
 });
 
-// API: Sincronizar marcados
 router.post('/api/:numero/sync', async (req, res) => {
     try {
         const numeroCarton = parseInt(req.params.numero);
         const { marcados, modo, codigo } = req.body;
         
-        // Validar acceso
         if (codigo) {
             const usuario = await Usuario.findOne({ 
                 codigoAcceso: codigo.toUpperCase(),
@@ -101,7 +92,6 @@ router.post('/api/:numero/sync', async (req, res) => {
     }
 });
 
-// Página multi-cartón
 router.get('/multi', (req, res) => {
     res.render('jugador/multi-carton');
 });

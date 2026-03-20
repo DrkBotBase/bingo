@@ -659,17 +659,6 @@ io.on('connection', (socket) => {
     });
 });
 
-app.get('/manifest.json', (req, res) => {
-    res.type('application/manifest+json');
-    res.sendFile(path.join(__dirname, 'public/manifest.json'));
-});
-app.get('/sw.js', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/js/service-worker.js'));
-});
-app.get('/ping', (req, res) => {
-  res.send('Pong');
-});
-
 app.get('/api/juego/estado/:numeroCarton', async (req, res) => {
     try {
         const numeroCarton = parseInt(req.params.numeroCarton);

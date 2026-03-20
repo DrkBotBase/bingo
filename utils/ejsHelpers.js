@@ -1,6 +1,3 @@
-// utils/ejsHelpers.js
-
-// Funciones de formato BINGO para usar en EJS
 function numeroAFormatoBingo(numero) {
     if (numero >= 1 && numero <= 15) return `B${numero}`;
     if (numero >= 16 && numero <= 30) return `I${numero}`;
