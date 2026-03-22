@@ -28,7 +28,7 @@ router.get('/carton/:numero', async (req, res) => {
         });
         
         if (!usuario) {
-            return res.status(403).render('error', { 
+            return res.status(403).render('errores', { 
                 mensaje: 'No tienes acceso a este cartón' 
             });
         }
@@ -36,7 +36,7 @@ router.get('/carton/:numero', async (req, res) => {
         let carton = await Carton.findOne({ numeroCarton });
         
         if (!carton) {
-            return res.status(404).render('error', { 
+            return res.status(404).render('errores', { 
                 mensaje: 'Cartón no encontrado' 
             });
         }
@@ -51,7 +51,7 @@ router.get('/carton/:numero', async (req, res) => {
         
     } catch (error) {
         console.error('Error cargando cartón:', error);
-        res.status(500).render('error', { 
+        res.status(500).render('errores', { 
             mensaje: 'Error cargando el cartón' 
         });
     }

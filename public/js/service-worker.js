@@ -1,4 +1,4 @@
-const version = 'v2';
+const version = 'v3';
 const CACHE_NAME = `bingo-pwa-${version}`;
 const DYNAMIC_CACHE = `bingo-dynamic-${version}`;
 const API_CACHE = `bingo-api-${version}`;

@@ -16,7 +16,7 @@ const cartonSchema = new mongoose.Schema({
   modoMarcado: {
     type: String,
     enum: ['manual', 'automatico'],
-    default: 'manual'
+    default: 'automatico'
   },
   socketId: String,
   ultimaConexion: { type: Date, default: Date.now }

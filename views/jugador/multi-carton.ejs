@@ -163,7 +163,7 @@
         const socket = io();
         let usuario = null;
         let cartones = [];
-        let modoAutomatico = false;
+        let modoAutomatico = true;
         let juegoActivo = false;
         let todasLasBolas = [];
         let numerosMarcados = {};
@@ -176,7 +176,7 @@
             if (guardado) {
                 try {
                     const estado = JSON.parse(guardado);
-                    modoAutomatico = estado.modoAutomatico || false;
+                    modoAutomatico = estado.modoAutomatico || true;
                     
                     if (estado.marcados) {
                         Object.keys(estado.marcados).forEach(cartonId => {
@@ -597,31 +597,43 @@
         });
         
         socket.on('reiniciar-cartones', () => {
+            todasLasBolas = [];
+            numerosMarcados = {}; 
+            
             cartones.forEach(carton => {
                 numerosMarcados[carton.numeroCarton] = new Set();
+                
+                const contador = document.getElementById(`contador-${carton.numeroCarton}`);
+                if (contador) contador.textContent = '0';
+                
+                const cartonContainer = document.getElementById(`carton-${carton.numeroCarton}`);
+                if (cartonContainer) {
+                    cartonContainer.classList.remove('border-4', 'border-yellow-400', 'bg-yellow-50', 'scale-105', 'shadow-2xl');
+                    const badgePrevio = cartonContainer.querySelector('.animate-pulse');
+                    if (badgePrevio) badgePrevio.remove();
+                }
             });
             
             document.querySelectorAll('.numero-carton.marcado').forEach(el => {
                 el.classList.remove('marcado');
             });
             
-            cartones.forEach(carton => {
-                const contador = document.getElementById(`contador-${carton.numeroCarton}`);
-                if (contador) contador.textContent = '0';
-            });
+            const historial = document.getElementById('historialBolas');
+            if (historial) historial.innerHTML = '';
             
+            const ultimaBolaEl = document.getElementById('ultimaBola');
+            if (ultimaBolaEl) ultimaBolaEl.textContent = '--';
+        
             actualizarProgresoGlobal();
             
             if (usuario) {
                 localStorage.removeItem(`bingo_${usuario.codigo}`);
             }
             
-            mostrarNotificacion('🔄 Nuevo juego', 'blue');
+            mostrarNotificacion('🔄 Nuevo juego: Cartones limpios', 'blue');
         });
         
-        socket.on('marcado-exitoso', (data) => {
-            console.log('Marcado confirmado:', data);
-        });
+        socket.on('marcado-exitoso', (data) => { data; });
         
         socket.on('error', (data) => {
             mostrarNotificacion('Error: ' + data.mensaje, 'red');

@@ -16,8 +16,6 @@
             margin: 0;
             overflow: hidden;
         }
-
-        /* Animaciones para las bolas */
         @keyframes fallDown {
             0% {
                 transform: translateY(-100px) rotate(0deg);
@@ -63,7 +61,6 @@
             border: 2px solid rgba(255,255,255,0.3);
         }
 
-        /* Contenedor del login */
         .login-container {
             position: relative;
             z-index: 10;
@@ -74,7 +71,6 @@
             padding: 1rem;
         }
 
-        /* Tarjeta de login transparente */
         .login-card {
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(8px);
@@ -93,7 +89,6 @@
             background: rgba(15, 23, 42, 0.7);
         }
 
-        /* Logo */
         .logo-bingo {
             width: 80px;
             height: 80px;
@@ -107,7 +102,6 @@
             box-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
         }
 
-        /* Inputs */
         .input-admin {
             width: 100%;
             padding: 0.75rem 1rem;
@@ -130,7 +124,6 @@
             box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2);
         }
 
-        /* Contenedor del password con botón */
         .password-container {
             position: relative;
             width: 100%;
@@ -181,12 +174,10 @@
             outline: none;
         }
 
-        /* Labels */
         label {
             color: rgba(255, 255, 255, 0.9);
         }
 
-        /* Botón con LOADER */
         .btn-admin {
             width: 100%;
             background: linear-gradient(135deg, #ef4444, #b91c1c);
@@ -213,7 +204,6 @@
             cursor: not-allowed;
         }
 
-        /* Loader animation */
         .btn-loader {
             display: inline-block;
             width: 20px;
@@ -230,7 +220,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Mensaje de error */
         .error-message {
             background: rgba(239, 68, 68, 0.2);
             border: 1px solid rgba(239, 68, 68, 0.5);
@@ -245,7 +234,6 @@
             backdrop-filter: blur(5px);
         }
 
-        /* Links */
         a {
             color: rgba(255, 255, 255, 0.7);
             transition: color 0.3s ease;
@@ -265,8 +253,6 @@
     </style>
 </head>
 <body>
-    
-    <!-- BOLAS DE BINGO ANIMADAS -->
     <div class="bg-bolas">
         <div class="bola-bingo bg-blue-500 w-16 h-16" style="left: 5%; animation-duration: 22s; animation-delay: 0s;">B12</div>
         <div class="bola-bingo bg-yellow-500 w-14 h-14" style="left: 15%; animation-duration: 25s; animation-delay: 2s;">I23</div>
@@ -281,10 +267,8 @@
         <div class="bola-bingo bg-violet-500 w-14 h-14" style="left: 70%; animation-duration: 29s; animation-delay: 6.5s;">I30</div>
     </div>
 
-    <!-- Contenedor del login -->
     <div class="login-container">
         <div class="login-card">
-            <!-- Logo -->
             <div class="logo-bingo">
               <img src="/logo.png" class="rounded-full object-cover">
             </div>
@@ -347,7 +331,6 @@
                 </button>
             </form>
             
-            <!-- Enlace de ayuda -->
             <div class="mt-6 text-center">
                 <a href="/" class="text-sm flex items-center justify-center gap-1 text-white">
                     <i class="fa-solid fa-arrow-left"></i>
@@ -358,11 +341,9 @@
     </div>
 
     <script>
-        // Función para mostrar/ocultar contraseña
         function togglePassword() {
             const passwordField = document.getElementById('passwordField');
             const toggleBtn = document.getElementById('toggleBtn');
-            
             if (passwordField.type === 'password') {
                 passwordField.type = 'text';
                 toggleBtn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
@@ -372,24 +353,16 @@
             }
         }
 
-        // Handle submit con loader
         function handleSubmit(form) {
             const btn = document.getElementById('btnSubmit');
-            
-            // Deshabilitar botón
             btn.disabled = true;
-            
-            // Cambiar contenido a loader
             btn.innerHTML = `
                 <span class="btn-loader"></span>
                 <span>Ingresando...</span>
             `;
-            
-            // El formulario se enviará después de este return true
             return true;
         }
 
-        // Ajustar bolas en móvil
         function ajustarBolas() {
             if (window.innerWidth < 768) {
                 const bolas = document.querySelectorAll('.bola-bingo');
@@ -403,11 +376,8 @@
                 });
             }
         }
-
         window.addEventListener('load', ajustarBolas);
         window.addEventListener('resize', ajustarBolas);
-        
-        // Prevenir que el formulario se envíe al presionar Enter en el botón del ojo
         document.getElementById('toggleBtn').addEventListener('mousedown', (e) => {
             e.preventDefault();
         });

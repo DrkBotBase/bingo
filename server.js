@@ -84,7 +84,7 @@ const bingoHelpers = require('./utils/ejsHelpers');
 app.locals.bingoHelpers = bingoHelpers;
 
 app.use('/', indexRoutes);
-app.use('/admin', adminRoutes);
+app.use('/admin', adminRoutes(io));
 app.use('/jugador', jugadorRoutes);
 
 async function conectarDB() {
@@ -110,20 +110,10 @@ async function conectarDB() {
 async function limpiarConexionesAntiguas() {
     try {
         const juegoActivo = await Juego.findOne({ estado: 'jugando' });
-        
-        if (juegoActivo) {
-            console.log('Hay un juego activo');
-        } else {
-            await Carton.updateMany({}, { 
-                marcados: [],
-                socketId: null,
-                modoMarcado: 'manual'
-            });
+        if (!juegoActivo) {
+            await Carton.updateMany({}, { $set: { marcados: [] } });
         }
-        
-    } catch (error) {
-        console.error('Error limpiando conexiones:', error);
-    }
+    } catch (e) { console.error(e); }
 }
 
 conectarDB();
@@ -173,82 +163,83 @@ io.on('connection', (socket) => {
         }
     });
     
-    socket.on('iniciar-juego', async (data) => {
-        try {
-            if (!session.admin) {
-                socket.emit('error', { mensaje: 'No autorizado' });
-                return;
-            }
-            
-            const { modalidad } = data;
-            
-            const usuariosActivos = await Usuario.find({ activo: true });
-            
-            const cartonesActivos = [];
-            usuariosActivos.forEach(usuario => {
-                cartonesActivos.push(...usuario.cartonesAsignados);
-            });
-            const cartonesUnicos = [...new Set(cartonesActivos)];
-            
-            const cartonesExistentes = await Carton.find({
-                numeroCarton: { $in: cartonesUnicos }
-            });
-            
-            const numerosExistentes = cartonesExistentes.map(c => c.numeroCarton);
-            const cartonesFaltantes = cartonesUnicos.filter(c => !numerosExistentes.includes(c));
-            
-            if (cartonesFaltantes.length > 0) {
-                for (const num of cartonesFaltantes) {
-                    const nuevoCarton = new Carton({
-                        numeroCarton: num,
-                        numeros: generarMatrizBingo(),
-                        marcados: []
-                    });
-                    await nuevoCarton.save();
-                }
-            }
-            
-            await Carton.updateMany(
-                { numeroCarton: { $in: cartonesUnicos } },
-                { 
-                    marcados: [],
-                    modoMarcado: 'manual'
-                }
-            );
-            
-            await Juego.updateMany(
-                { estado: 'jugando' }, 
-                { estado: 'finalizado' }
-            );
-            
-            const juego = new Juego({
-                estado: 'jugando',
-                modalidad,
-                bolasCantadas: [],
-                cartonesActivos: cartonesUnicos
-            });
-            await juego.save();
-            
-            io.emit('juego-iniciado', { 
-                modalidad,
-                juegoId: juego._id
-            });
-            
-            usuariosActivos.forEach(usuario => {
-                io.to(`usuario-${usuario.codigoAcceso}`).emit('tus-cartones-reiniciados', {
-                    cartones: usuario.cartonesAsignados,
-                    mensaje: '🔄 Nuevo juego - Tus cartones están listos'
-                });
-            });
-            
-            io.emit('reiniciar-localstorage');
-            
-        } catch (error) {
-            console.error('❌ Error iniciando juego:', error);
-            socket.emit('error', { mensaje: 'Error al iniciar el juego' });
+socket.on('iniciar-juego', async (data) => {
+    try {
+        if (!session.admin) {
+            socket.emit('error', { mensaje: 'No autorizado' });
+            return;
         }
-    });
-    
+        
+        const { modalidad } = data;
+        
+        const usuariosActivos = await Usuario.find({ activo: true });
+        const cartonesActivos = [];
+        usuariosActivos.forEach(usuario => {
+            cartonesActivos.push(...usuario.cartonesAsignados);
+        });
+        const cartonesUnicos = [...new Set(cartonesActivos)];
+        
+        const cartonesExistentes = await Carton.find({
+            numeroCarton: { $in: cartonesUnicos }
+        });
+        
+        const numerosExistentes = cartonesExistentes.map(c => c.numeroCarton);
+        const cartonesFaltantes = cartonesUnicos.filter(c => !numerosExistentes.includes(c));
+        
+        if (cartonesFaltantes.length > 0) {
+            for (const num of cartonesFaltantes) {
+                const nuevoCarton = new Carton({
+                    numeroCarton: num,
+                    numeros: generarMatrizBingo(),
+                    marcados: []
+                });
+                await nuevoCarton.save();
+            }
+        }
+        
+        await Carton.updateMany(
+            { numeroCarton: { $in: cartonesUnicos } },
+            { 
+                $set: { 
+                    marcados: [], 
+                    modoMarcado: 'manual' 
+                }
+            }
+        );
+        
+        await Juego.updateMany(
+            { estado: { $in: ['jugando', 'pausado', 'esperando'] } }, 
+            { estado: 'finalizado' }
+        );
+        
+        const juego = new Juego({
+            estado: 'jugando',
+            modalidad,
+            bolasCantadas: [],
+            cartonesActivos: cartonesUnicos
+        });
+        await juego.save();
+        
+        io.emit('reiniciar-cartones'); 
+        
+        io.emit('juego-iniciado', { 
+            modalidad,
+            juegoId: juego._id
+        });
+        
+        usuariosActivos.forEach(usuario => {
+            io.to(`usuario-${usuario.codigoAcceso}`).emit('tus-cartones-reiniciados', {
+                cartones: usuario.cartonesAsignados,
+                mensaje: '🔄 ¡Nuevo juego! Tus cartones han sido limpiados.'
+            });
+        });
+        
+    } catch (error) {
+        console.error('❌ Error iniciando juego:', error);
+        socket.emit('error', { mensaje: 'Error crítico al iniciar el juego' });
+    }
+});
+
     socket.on('pausar-juego', async () => {
         try {
             if (!session.admin) return;
@@ -306,68 +297,88 @@ io.on('connection', (socket) => {
         }
     });
     
-    socket.on('cantar-bola', async (data) => {
-        try {
-            if (!session.admin) {
-                socket.emit('error', { mensaje: 'No autorizado' });
-                return;
-            }
+socket.on('cantar-bola', async (data) => {
+    try {
+        if (!session.admin) {
+            socket.emit('error', { mensaje: 'No autorizado' });
+            return;
+        }
+        
+        const { numero } = data;
+        
+        const juego = await Juego.findOne({ estado: 'jugando' });
+        if (!juego) {
+            socket.emit('error', { mensaje: 'No hay juego activo' });
+            return;
+        }
+        
+        if (juego.bolasCantadas.includes(numero)) {
+            socket.emit('error', { mensaje: 'Esta bola ya salió' });
+            return;
+        }
+        
+        juego.bolasCantadas.push(numero);
+        juego.ultimaBola = numero;
+        await juego.save();
+        
+        await Bola.create({ 
+            juegoId: juego._id, 
+            numero
+        });
+
+        let colBusqueda = 0;
+        if (numero <= 15) colBusqueda = 0;
+        else if (numero <= 30) colBusqueda = 1;
+        else if (numero <= 45) colBusqueda = 2;
+        else if (numero <= 60) colBusqueda = 3;
+        else if (numero <= 75) colBusqueda = 4;
+
+        for (let fila = 0; fila < 5; fila++) {
+            const posicionStr = `${fila}-${colBusqueda}`;
             
-            const { numero } = data;
-            
-            const juego = await Juego.findOne({ estado: 'jugando' });
-            if (!juego) {
-                socket.emit('error', { mensaje: 'No hay juego activo' });
-                return;
-            }
-            
-            if (juego.bolasCantadas.includes(numero)) {
-                socket.emit('error', { mensaje: 'Esta bola ya salió' });
-                return;
-            }
-            
-            juego.bolasCantadas.push(numero);
-            juego.ultimaBola = numero;
+            await Carton.updateMany(
+                { 
+                    numeroCarton: { $in: juego.cartonesActivos },
+                    [`numeros.${fila}.${colBusqueda}`]: numero,
+                    marcados: { $ne: posicionStr }
+                },
+                { $push: { marcados: posicionStr } }
+            );
+        }
+
+        const formato = bingoHelpers.numeroAFormatoBingo(numero);
+        const letra = bingoHelpers.getLetraBingo(numero);
+        
+        io.emit('nueva-bola', { 
+            numero,
+            formato,
+            letra,
+            bolasCantadas: juego.bolasCantadas
+        });
+        
+        const ganador = await verificarGanador(juego._id);
+        
+        if (ganador) {
+            juego.estado = 'finalizado';
+            juego.ganador = {
+                cartonId: ganador.cartonId,
+                tipo: ganador.tipo,
+                timestamp: new Date()
+            };
             await juego.save();
             
-            await Bola.create({ 
-                juegoId: juego._id, 
-                numero
+            io.emit('juego-terminado', {
+                mensaje: `🎉 ¡BINGO! Ganó el cartón #${ganador.cartonId}`,
+                cartonId: ganador.cartonId,
+                tipo: ganador.tipo
             });
-            
-            const formato = bingoHelpers.numeroAFormatoBingo(numero);
-            const letra = bingoHelpers.getLetraBingo(numero);
-            
-            io.emit('nueva-bola', { 
-                numero,
-                formato,
-                letra,
-                bolasCantadas: juego.bolasCantadas
-            });
-            
-            const ganador = await verificarGanador(juego._id);
-            
-            if (ganador) {
-                juego.estado = 'finalizado';
-                juego.ganador = {
-                    cartonId: ganador.cartonId,
-                    tipo: ganador.tipo,
-                    timestamp: new Date()
-                };
-                await juego.save();
-                
-                io.emit('juego-terminado', {
-                    mensaje: `🎉 ¡BINGO! Ganó el cartón #${ganador.cartonId}`,
-                    cartonId: ganador.cartonId,
-                    tipo: ganador.tipo
-                });
-            }
-            
-        } catch (error) {
-            console.error('Error cantando bola:', error);
         }
-    });
-    
+        
+    } catch (error) {
+        console.error('❌ Error crítico cantando bola:', error);
+    }
+});
+
     socket.on('marcar-manual', async (data) => {
         try {
             const { numeroCarton, posicion } = data;
@@ -411,55 +422,60 @@ io.on('connection', (socket) => {
     socket.on('marcar-manual-multi', async (data) => {
         try {
             const { codigo, cartonId, posicion } = data;
-            
-            console.log(`🎯 Recibido marcado multi: Cartón #${cartonId}, Posición: ${posicion}, Usuario: ${codigo}`);
-            
+            const [fila, columna] = posicion.split('-').map(Number);
+    
             const usuario = await Usuario.findOne({ 
                 codigoAcceso: codigo.toUpperCase(),
                 cartonesAsignados: cartonId,
                 activo: true 
             });
+            if (!usuario) return;
             
-            if (!usuario) {
+            const [carton, juego] = await Promise.all([
+                Carton.findOne({ numeroCarton: cartonId }),
+                Juego.findOne({ estado: 'jugando' })
+            ]);
+    
+            if (!carton || !juego) return;
+            
+            const numeroEnPosicion = carton.numeros[fila][columna];
+    
+            const esCentro = (fila === 2 && columna === 2);
+    
+            if (!esCentro && !juego.bolasCantadas.includes(numeroEnPosicion)) {
+                socket.emit('error', { mensaje: 'Ese número aún no ha salido' });
                 return;
             }
-          
-            const carton = await Carton.findOne({ numeroCarton: cartonId });
-            if (!carton) {
-                return;
-            }
-            
+
             if (!carton.marcados.includes(posicion)) {
                 carton.marcados.push(posicion);
                 await carton.save();
                 
-                const juego = await Juego.findOne({ estado: 'jugando' });
-                if (juego) {
-                    const ganador = await verificarGanador(juego._id, cartonId);
+                socket.emit('marcado-exitoso', { cartonId, posicion });
+    
+                const ganador = await verificarGanador(juego._id, cartonId);
+                
+                if (ganador && ganador.cartonId === cartonId) {
+                    juego.estado = 'finalizado';
+                    juego.ganador = {
+                        cartonId: cartonId,
+                        tipo: ganador.tipo,
+                        timestamp: new Date()
+                    };
+                    await juego.save();
                     
-                    if (ganador && ganador.cartonId === cartonId) {
-                        juego.estado = 'finalizado';
-                        juego.ganador = {
-                            cartonId: cartonId,
-                            tipo: ganador.tipo,
-                            timestamp: new Date()
-                        };
-                        await juego.save();
-                        
-                        io.emit('juego-terminado', {
-                            mensaje: `🎉 ¡BINGO! Ganó el cartón #${cartonId}`,
-                            cartonId: cartonId,
-                            tipo: ganador.tipo
-                        });
-                    }
+                    io.emit('juego-terminado', {
+                        mensaje: `🎉 ¡BINGO! Ganó el cartón #${cartonId}`,
+                        cartonId: cartonId,
+                        tipo: ganador.tipo
+                    });
                 }
-            } else {}
-            
+            }
         } catch (error) {
-            console.error('Error en marcado manual multi:', error);
+            console.error('❌ Error en validación de marcado:', error);
         }
     });
-    
+
     socket.on('cambiar-modo', async (data) => {
         try {
             const { numeroCarton, modo } = data;
